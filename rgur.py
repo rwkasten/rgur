@@ -419,7 +419,7 @@ occupied by another piece of the same color. If a piece lands on a square with a
 with their additional roll.
     
 Here, Black has rolled a 2. The piece at 1,2 may not advance, since the piece at 3,2 is blocking it. 
-The piece at 3,2 may advance to 5,2. If Black had thrown a 3, both pieces could move, but the piece 
+The piece at 3,2 may advance to 5,2. If Black had thrown a 3, either piece could move, but the piece 
 at 1,2 would land on a rosette at 4,2 and Black would roll again:""")
     inst_board = [[' ', 'B', '↑'], [' ', '→', '←'], [' ', 'B', '←'], [' ', '→', '←'], [' ', '→', ' '],
                   [' ', '→', ' '], ['→', '↑', '←'], ['↓', '↓', '←']]
