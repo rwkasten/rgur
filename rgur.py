@@ -2,7 +2,7 @@
 
 import random
 import sys
-from operator import itemgetter
+from operator import itemgetter, attrgetter, methodcaller
 
 
 def show_notes():
@@ -16,11 +16,11 @@ def show_notes():
     print("the best, so that's what I went with.")
     print()
     print("The game is currently in alpha. Here are my notes for things to add/fix:")
-    print("Bugs - non in-game board drawing - add for commit")
+    print("Bugs - none known")
     print("To-dos(minor): messages for invalid bear-off attempt, blocked move")
     print("To-dos: expand the path list to include an explicit index to allow markers to hit the same square twice")
-    print("To-dos: AI: escapeOpponent")
-    print("To-dos: V2: secondary rulesets + instructions, doubling cube")
+    print("To-dos: AI: selectColor, getComputerMove, getDupeBoard, canHit, canBearOff, hitRosette, escapeOpponent")
+    print("To-dos: V2: secondary rulesets + instructions, pot multipliers")
     print("To-dos: V3: wagering, W/L tracking, graphics + touch/click I/O")
     print("Possible to-dos: add option for path arrows")
     print()
@@ -30,11 +30,11 @@ def show_notes():
 
 def draw_board(board):
     """Prints an Ur game board"""
-    hline1 = ' +---+---+---+---+       +---+---+'
-    hline2 = ' +---+---+---+---+---+---+---+---+'
+    HLINE1 = ' +---+---+---+---+       +---+---+'
+    HLINE2 = ' +---+---+---+---+---+---+---+---+'
 
     print('   1   2   3   4   5   6   7   8')
-    print(hline1)
+    print(HLINE1)
     for y in range(3):
         print(str(y + 1) + '|', end='')
         for x in range(8):
@@ -47,16 +47,16 @@ def draw_board(board):
             else:
                 print(' %s |' % (board[x][y]), end='')
         if y == 0 or y == 1:
-            print('\n' + hline2)
+            print('\n' + HLINE2)
         else:
-            print('\n' + hline1)
+            print('\n' + HLINE1)
 
 
 def draw_ingame_board(board, w_off, b_off):
     """Prints an Ur game board with reserve and off counts"""
     w_reserve = pieces_reserve(board, 'W', w_off)
     b_reserve = pieces_reserve(board, 'B', b_off)
-    hline2 = ' +---+---+---+---+---+---+---+---+'
+    HLINE2 = ' +---+---+---+---+---+---+---+---+'
 
     print('   1   2   3   4   5   6   7   8')
     print(' +---+---+---+---+   W   +---+---+')
@@ -76,7 +76,7 @@ def draw_ingame_board(board, w_off, b_off):
             else:
                 print(' %s |' % (board[x][y]), end='')
         if y == 0 or y == 1:
-            print('\n' + hline2)
+            print('\n' + HLINE2)
         else:
             print('\n' + ' +---+---+---+---+   B   +---+---+')
 
@@ -90,7 +90,7 @@ def reset_board():
 
 
 def is_rosette(x, y):
-    """Check to see if a square has a rosette on it"""
+    """Decide whether a square has a rosette on it or not"""
     if (x == 0 and y == 0) or (x == 6 and y == 0) or (x == 3 and y == 1) or (x == 0 and y == 2) or (x == 6 and y == 2):
         return True
     else:
@@ -99,14 +99,16 @@ def is_rosette(x, y):
 
 def black_path():
     """This will be selectable as additional rulesets are added"""
-    return [[3, 2], [2, 2], [1, 2], [0, 2], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [6, 0], [7, 0],
-            [7, 1], [7, 2], [6, 2]]
+    b_path = [[3, 2], [2, 2], [1, 2], [0, 2], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [6, 0], [7, 0],
+              [7, 1], [7, 2], [6, 2]]
+    return b_path
 
 
 def white_path():
     """This will be selectable as additional rulesets are added"""
-    return [[3, 0], [2, 0], [1, 0], [0, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [6, 2], [7, 2],
-            [7, 1], [7, 0], [6, 0]]
+    w_path = [[3, 0], [2, 0], [1, 0], [0, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [6, 2], [7, 2],
+              [7, 1], [7, 0], [6, 0]]
+    return w_path
 
 
 def dice_roll():
@@ -129,7 +131,7 @@ def pieces_reserve(board, marker, pieces_off):
 
 
 def get_on_board_pieces(board, player):
-    """Returns a list of player's markers currently on the board"""
+    """Get list of player's markers currently on the board"""
     on_board_pieces = []
     for x in range(8):
         for y in range(3):
@@ -139,7 +141,7 @@ def get_on_board_pieces(board, player):
 
 
 def is_valid_selection(board, player, movex, movey):
-    """Checks the move to ensure the player selected one of their own pieces to move"""
+    """Has the player selected one of their own pieces to move?"""
     if board[movex][movey] == player:
         return True
     else:
@@ -147,7 +149,7 @@ def is_valid_selection(board, player, movex, movey):
 
 
 def is_bearing_off(path, roll, movex, movey):
-    """Checks the move to see if the result was a piece bearing off"""
+    """Does this move bear a piece off?"""
     if movex == 'o' and movey == 'n':
         return False
     where_path = path.index([movex, movey])
@@ -158,7 +160,7 @@ def is_bearing_off(path, roll, movex, movey):
 
 
 def is_move_valid(board, player, path, roll, movex, movey):
-    """Checks the move for validity"""
+    """Is the proposed move a valid one?"""
     if not is_valid_selection(board, player, movex, movey):
         return False
     if is_bearing_off(path, roll, movex, movey):
@@ -174,7 +176,7 @@ def is_move_valid(board, player, path, roll, movex, movey):
 
 
 def is_bear_on_valid(board, player, path, roll):
-    """Checks to see if a bear on attempt is valid"""
+    """Is bearing on allowed with this roll?"""
     pathx, pathy = path[roll-1]
     if board[pathx][pathy] == player:
         return False
@@ -199,7 +201,7 @@ def is_bearing_on(board, player, path, roll):
 
 
 def who_goes_first():
-    """Randomly choose the player who goes first."""
+    # Randomly choose the player who goes first.
     if random.randint(0, 1) == 0:
         return 'B'
     else:
@@ -207,7 +209,8 @@ def who_goes_first():
 
 
 def get_player_move(board, player, path, roll, off):
-    """Let the player type in their move. Returns the move as [x, y] or returns the string 'quit'"""
+    # Let the player type in their move.
+    # Returns the move as [x, y] (or returns the strings 'hints' or 'quit')
     DIGITS1TO8 = '1 2 3 4 5 6 7 8'.split()
     DIGITS1TO3 = '1 2 3'.split()
     while True:
@@ -356,7 +359,6 @@ def get_computer_move(board, player, path, roll, w_off, b_off):
 
 
 def get_playername(player):
-    """Translates shortened versions of player names to printable strings"""
     if player == 'B':
         playername = 'black'
     else:
@@ -365,13 +367,12 @@ def get_playername(player):
 
 
 def play_again():
-    """This function returns True if the player wants to play again, otherwise it returns False."""
+    # This function returns True if the player wants to play again, otherwise it returns False.
     print('Do you want to play again? (yes or no)')
     return input().lower().startswith('y')
 
 
 def show_instructions():
-    """Prints out the game instructions"""
     print('''Instructions:
 The Royal Game of Ur is a chase game with 4 safe spaces for each player.  Each player 
 starts with 7 markers and the first player to move all of them 17 squares wins.''')
@@ -419,7 +420,7 @@ occupied by another piece of the same color. If a piece lands on a square with a
 with their additional roll.
     
 Here, Black has rolled a 2. The piece at 1,2 may not advance, since the piece at 3,2 is blocking it. 
-The piece at 3,2 may advance to 5,2. If Black had thrown a 3, either piece could move, but the piece 
+The piece at 3,2 may advance to 5,2. If Black had thrown a 3, both pieces could move, but the piece 
 at 1,2 would land on a rosette at 4,2 and Black would roll again:""")
     inst_board = [[' ', 'B', '↑'], [' ', '→', '←'], [' ', 'B', '←'], [' ', '→', '←'], [' ', '→', ' '],
                   [' ', '→', ' '], ['→', '↑', '←'], ['↓', '↓', '←']]
@@ -439,7 +440,7 @@ Before:""")
     draw_board(inst_board)
     print("\nAfter:")
     inst_board = [['↓', '→', ' '], ['←', '→', ' '], ['←', '→', ' '], ['←', '→', ' '], [' ', '→', ' '],
-                  [' ', '→', ' '], ['←', '↓', '→'], ['←', 'W', '←']]
+                  [' ', '→', ' '], ['←', '↓', '→'], ['←', 'W', '↑']]
     draw_board(inst_board)
     input("Press enter to continue")
     print()
@@ -477,6 +478,8 @@ if input('Would you like to view the credits and game notes? (yes/no) ').lower()
     show_notes()
 if input('Would you like to play against the computer? (yes/no): ').lower().startswith('y'):
     invoke_AI = True
+else:
+    invoke_AI = False
 
 human = ' '
 if invoke_AI == True:
@@ -531,7 +534,7 @@ while True:
         if len(possible_moves) == 0:
             other_playername = get_playername(other_player)
             print(playername.capitalize() + " rolled a %s. No valid moves for that roll! " % roll +
-                  other_playername.capitalize() + "'s turn.")
+                    other_playername.capitalize() + "'s turn.")
             switch_players = True
         elif len(possible_moves) == 1:
             # Move is forced
