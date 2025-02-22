@@ -593,7 +593,7 @@ while True:
     if winner == 'W':
         draw_ingame_board(main_board, 7, b_off)
     else:
-        draw_ingame_board(main_board,  w_off, 7)
+        draw_ingame_board(main_board, 7, w_off)
     # show_counter_status(main_board, b_off, w_off)
     if winner == 'B':
         playername = 'black'
