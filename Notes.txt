@@ -66,4 +66,5 @@ White rolled a 4. No valid moves for that roll! Black's turn.
 White wins!
 
 Negative value in White's reserve
-Winning roll not displayed
+Winning roll not displayed - this should be fixed now
+Seriously tho - I must've been cooked towards the end of this code.  It's not horrible, but it needs some standardization
