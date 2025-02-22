@@ -436,7 +436,7 @@ Here, White has rolled a 3. Moving from 7,2 to 8,2 will hit the Black player's p
 Black player's reserve.
 Before:""")
     inst_board = [['↓', '→', ' '], ['←', '→', ' '], ['←', '→', ' '], ['←', '→', ' '], [' ', '→', ' '],
-                  [' ', '→', ' '], ['←', 'W', '→'], ['←', 'B', '←']]
+                  [' ', '→', ' '], ['←', 'W', '→'], ['←', 'B', '↑']]
     draw_board(inst_board)
     print("\nAfter:")
     inst_board = [['↓', '→', ' '], ['←', '→', ' '], ['←', '→', ' '], ['←', '→', ' '], [' ', '→', ' '],
